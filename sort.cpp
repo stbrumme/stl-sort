@@ -1,3 +1,9 @@
+// //////////////////////////////////////////////////////////
+// sort.cpp
+// Copyright (c) 2011 Stephan Brumme. All rights reserved.
+// see http://create.stephan-brumme.com/disclaimer.html
+//
+
 // g++ -O3 sort.cpp -o sort
 
 #include <cstdio>
