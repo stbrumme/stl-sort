@@ -1,11 +1,10 @@
 // //////////////////////////////////////////////////////////
 // sort.h
-// Copyright (c) 2013-2014 Stephan Brumme. All rights reserved.
+// Copyright (c) 2013,2020 Stephan Brumme. All rights reserved.
 // see http://create.stephan-brumme.com/disclaimer.html
 //
 
-// g++ -O3 sort.cpp -o sort
-// if possible, use also -std=c++11
+// g++ -O3 sort.cpp -o sort -std=c++11
 
 // All sort algorithms follow the same syntax as std::sort
 // i.e.: quickSort(container.begin(), container.end());
@@ -22,15 +21,6 @@
 #include <algorithm>  // std::iter_swap
 #include <iterator>   // std::advance, std::iterator_traits
 #include <functional> // std::less
-
-
-// use std::move if C++11 is enabled
-#if    (__cplusplus__ >= 201103L) || __GXX_EXPERIMENTAL_CXX0X__
-  #undef  __std_move__
-  #define __std_move__(x) std::move(x)
-#else
-  #define __std_move__(x) (x)
-#endif
 
 
 /// Bubble Sort, allow user-defined less-than operator
@@ -53,11 +43,11 @@ void bubbleSort(iterator first, iterator last, LessThan lessThan)
     // reset swapped flag
     swapped = false;
 
-    iterator current = first;
+    auto current = first;
     while (current != last)
     {
       // bubble up
-      iterator next = current;
+      auto next = current;
       ++next;
 
       // two neighbors in wrong order ? swap them !
@@ -96,8 +86,8 @@ void selectionSort(iterator first, iterator last, LessThan lessThan)
   for (iterator current = first; current != last; ++current)
   {
     // find smallest element in the unsorted part and remember its iterator in "minimum"
-    iterator minimum = current;
-    iterator compare = current;
+    auto minimum = current;
+    auto compare = current;
     ++compare;
 
     // walk through all still unsorted elements
@@ -137,33 +127,33 @@ void insertionSort(iterator first, iterator last, LessThan lessThan)
     return;
 
   // skip first element, consider it as sorted
-  iterator current = first;
+  auto current = first;
   ++current;
 
   // insert all remaining unsorted elements into the sorted elements
   while (current != last)
   {
     // insert "compare" into the already sorted elements
-    const typename std::iterator_traits<iterator>::value_type compare = __std_move__(*current);
+    auto compare = std::move(*current);
 
     // find location inside sorted range, beginning from the right end
-    iterator pos = current;
+    auto pos = current;
     while (pos != first)
     {
       // stop if left neighbor is not smaller
-      iterator left = pos;
+      auto left = pos;
       --left;
       if (!lessThan(compare, *left))
         break;
 
       // shift that left neighbor one position to the right
-      *pos = __std_move__(*left);
-      pos  = __std_move__( left); // same as --pos
+      *pos = std::move(*left);
+      pos  = std::move( left); // same as --pos
     }
 
     // found final position
     if (pos != current)
-      *pos = __std_move__(compare);
+      *pos = std::move(compare);
 
     // sort next element
     ++current;
@@ -186,12 +176,12 @@ void insertionSort(iterator first, iterator last)
 template <typename iterator, typename LessThan>
 void shellSort(iterator first, iterator last, LessThan lessThan)
 {
-  const size_t numElements = std::distance(first, last);
+  auto numElements = std::distance(first, last);
   if (numElements <= 1)
     return;
 
   // sequence taken from Wikipedia (Marcin Ciura)
-  static const size_t OptimalIncrements[] =
+  static const int OptimalIncrements[] =
   { 68491, 27396, 10958, 4383, 1750, 701, 301, 132, 57, 23, 10, 4, 1, 0 };
   size_t increment = OptimalIncrements[0];
   size_t incrementIndex = 0;
@@ -202,22 +192,22 @@ void shellSort(iterator first, iterator last, LessThan lessThan)
   // stumble through all increments in descending order
   while (increment > 0)
   {
-    iterator stripe = first;
-    size_t offset   = increment;
+    auto stripe = first;
+    auto offset = increment;
     std::advance(stripe, offset);
     while (stripe != last)
     {
       // these iterators are always "increment" apart
-      iterator right = stripe;
-      iterator left  = stripe;
+      auto right = stripe;
+      auto left  = stripe;
       std::advance(left, -int(increment));
 
       // value to be sorted
-      typename std::iterator_traits<iterator>::value_type compare = *right;
+      auto compare = *right;
 
       // note: stripe is simply the same as first + offset
       // but operator+() is expensive for non-random access iterators
-      size_t posRight = offset;
+      auto posRight = offset;
       // only look at values between "first" and "last"
       while (true)
       {
@@ -226,7 +216,7 @@ void shellSort(iterator first, iterator last, LessThan lessThan)
           break;
 
         // no, still not correct order: shift bigger element to the right
-        *right = __std_move__(*left);
+        *right = std::move(*left);
 
         // go one step to the left
         right  = left;
@@ -239,7 +229,7 @@ void shellSort(iterator first, iterator last, LessThan lessThan)
 
       // found sorted position
       if (posRight != offset)
-        *right = __std_move__(compare);
+        *right = std::move(compare);
 
       // next stripe
       ++stripe;
@@ -297,7 +287,7 @@ void naryHeapSort(iterator first, iterator last, LessThan lessThan)
     return;
   }
 
-  size_t numElements = std::distance(first, last);
+  auto numElements = std::distance(first, last);
   if (numElements < 2)
     return;
 
@@ -308,20 +298,20 @@ void naryHeapSort(iterator first, iterator last, LessThan lessThan)
     void operator() (iterator first, size_t pos, size_t stop, LessThan lessThan)
     {
       std::advance(first, pos);
-      iterator parent = first;
-      iterator child  = first;
+      auto parent = first;
+      auto child  = first;
 
-      typename std::iterator_traits<iterator>::value_type value = __std_move__(*parent);
+      auto value = std::move(*parent);
 
       while (pos * Width + 1 < stop)
       {
         // locate children
-        size_t increment = pos * (Width - 1) + 1;
+        auto increment = pos * (Width - 1) + 1;
         pos += increment;
         std::advance(child, increment);
 
         // figure out how many children we have to check
-        size_t numChildren = Width;
+        auto numChildren = Width;
         if (numChildren + pos > stop)
           numChildren = stop - pos;
 
@@ -346,16 +336,16 @@ void naryHeapSort(iterator first, iterator last, LessThan lessThan)
         // is no child bigger than the parent ? => done
         if (!lessThan(value, *child))
         {
-          *parent = __std_move__(value);
+          *parent = std::move(value);
           return;
         }
 
         // move biggest child one level up, parent one level down and continue
-        *parent = __std_move__(*child);
-        parent  =               child;
+        *parent = std::move(*child);
+        parent  =            child;
       }
 
-      *child = __std_move__(value);
+      *child = std::move(value);
     }
   } heapify;
 
@@ -366,7 +356,7 @@ void naryHeapSort(iterator first, iterator last, LessThan lessThan)
 
   // take heap's largest element and move it to the end
   // => build sorted sequence beginning with last (= largest) element
-  for (size_t i = numElements - 1; i > 0; i--)
+  for (auto i = numElements - 1; i > 0; i--)
   {
     --last;
     std::iter_swap(first, last);
@@ -403,9 +393,9 @@ void mergeSort(iterator first, iterator last, LessThan lessThan, size_t size = 0
     return;
 
   // divide into two partitions
-  size_t firstHalf  = size / 2;
-  size_t secondHalf = size - firstHalf;
-  iterator mid = first;
+  auto firstHalf  = size / 2;
+  auto secondHalf = size - firstHalf;
+  auto mid = first;
   std::advance(mid, firstHalf);
 
   // recursively sort them
@@ -444,9 +434,9 @@ void mergeSortInPlace(iterator first, iterator last, LessThan lessThan, size_t s
     return;
 
   // divide into two partitions
-  size_t firstHalf  = size / 2;
-  size_t secondHalf = size - firstHalf;
-  iterator mid = first;
+  auto firstHalf  = size / 2;
+  auto secondHalf = size - firstHalf;
+  auto mid = first;
   std::advance(mid, firstHalf);
 
   // recursively sort them
@@ -455,28 +445,28 @@ void mergeSortInPlace(iterator first, iterator last, LessThan lessThan, size_t s
 
   // merge partitions (left starts at "first", right starts and "mid")
   // move iterators towards the end until they meet
-  iterator right = mid;
+  auto right = mid;
   while (first != mid)
   {
     // next value of both partitions in wrong order (smaller one belongs to the left)
     if (lessThan(*right, *first))
     {
       // this value must be moved to the right partition
-      typename std::iterator_traits<iterator>::value_type misplaced = __std_move__(*first);
+      auto misplaced = std::move(*first);
 
       // this value belongs to the left partition
-      *first = __std_move__(*right);
+      *first = std::move(*right);
 
       // misplaced value must be inserted at correct position in the right partition
-      iterator scan = right;
-      iterator next = scan;
+      auto scan = right;
+      auto next = scan;
       ++next;
       // move smaller one position to the left
       while (next != last && lessThan(*next, misplaced))
-        *scan++ = __std_move__(*next++);
+        *scan++ = std::move(*next++);
 
       // found the spot !
-      *scan = __std_move__(misplaced);
+      *scan = std::move(misplaced);
     }
 
     ++first;
@@ -499,25 +489,25 @@ void mergeSortInPlace(iterator first, iterator last)
 template <typename iterator, typename LessThan>
 void quickSort(iterator first, iterator last, LessThan lessThan)
 {
-  size_t numElements = std::distance(first, last);
+  auto numElements = std::distance(first, last);
   // already sorted ?
   if (numElements <= 1)
     return;
 
-  iterator pivot = last;
+  auto pivot = last;
   --pivot;
 
   // choose middle element as pivot (good choice for partially sorted data)
   if (numElements > 2)
   {
-    iterator middle = first;
+    auto middle = first;
     std::advance(middle, numElements/2);
     std::iter_swap(middle, pivot);
   }
 
   // scan beginning from left and right end and swap misplaced elements
-  iterator left  = first;
-  iterator right = pivot;
+  auto left  = first;
+  auto right = pivot;
   while (left != right)
   {
     // look for mismatches
@@ -547,4 +537,71 @@ void quickSort(iterator first, iterator last)
   quickSort(first, last, std::less<typename std::iterator_traits<iterator>::value_type>());
 }
 
-#undef __std_move__
+
+// /////////////////////////////////////////////////////////////////////
+
+
+/// Intro Sort, allow user-defined less-than operator
+template <typename iterator, typename LessThan>
+void introSort(iterator first, iterator last, LessThan lessThan)
+{
+  // switch to Insertion Sort if the (sub)array is small
+  auto numElements = std::distance(first, last);
+  if (numElements <= 16)
+  {
+    // already sorted ?
+    if (numElements <= 1)
+      return;
+
+    // micro-optimization for exactly 2 elements
+    if (numElements == 2)
+    {
+      if (lessThan(*(first + 1), *first))
+        std::iter_swap(first + 1, first);
+      return;
+    }
+
+    // between 3 and 16 elements
+    insertionSort(first, last, lessThan);
+    return;
+  }
+
+  auto pivot = last;
+  --pivot;
+
+  // choose middle element as pivot (good choice for partially sorted data)
+  auto middle = first;
+  std::advance(middle, numElements/2);
+  std::iter_swap(middle, pivot);
+
+  // scan beginning from left and right end and swap misplaced elements
+  auto left  = first;
+  auto right = pivot;
+  while (left != right)
+  {
+    // look for mismatches
+    while (!lessThan(*pivot, *left)  && left != right)
+      ++left;
+    while (!lessThan(*right, *pivot) && left != right)
+      --right;
+    // swap two values which are both on the wrong side of the pivot element
+    if (left != right)
+      std::iter_swap(left, right);
+  }
+
+  // move pivot to its final position
+  if (pivot != left && lessThan(*pivot, *left))
+    std::iter_swap(pivot, left);
+
+  // subdivide
+  introSort(first,  left, lessThan);
+  introSort(++left, last, lessThan); // *left itself is already sorted
+}
+
+
+/// Intro Sort with default less-than operator
+template <typename iterator>
+void introSort(iterator first, iterator last)
+{
+  introSort(first, last, std::less<typename std::iterator_traits<iterator>::value_type>());
+}

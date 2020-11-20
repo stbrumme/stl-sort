@@ -1,14 +1,13 @@
 // //////////////////////////////////////////////////////////
 // sort.cpp
-// Copyright (c) 2011-2014 Stephan Brumme. All rights reserved.
+// Copyright (c) 2011,2020 Stephan Brumme. All rights reserved.
 // see http://create.stephan-brumme.com/disclaimer.html
 //
 
-// g++ -O3 sort.cpp -o sort
-// and -std=c++11 if possible
+// g++ -O3 -std=c++11 sort.cpp -o sort
 
 #include <cstdio>
-#include <cstdlib>
+#include <cstdlib>   // srand/rand
 #include <cmath>     // fabs
 
 #include <vector>
@@ -332,6 +331,45 @@ int main(int argc, char** argv)
 #endif // CHECKRESULT
 
   printf("Quick Sort\t%8.3f ms\t%8.3f ms\t%8.3f ms\t%8.3f ms\n",
+         1000*timeSorted, 1000*timeInverted, 1000*timeRandom, 1000*(timeSorted+timeInverted+timeRandom));
+#endif // FORWARDITERATOR
+
+
+#ifndef FORWARDITERATOR
+  // IntroSort
+  // inverted data
+  data = descending;
+  timeInverted = seconds();
+  introSort(data.begin(), data.end());
+  timeInverted = fabs(seconds() - timeInverted);
+
+#ifdef CHECKRESULT
+  if (data != sorted)
+    printf("Sorting problem @ %d ", __LINE__);
+#endif // CHECKRESULT
+
+  // sorted data
+  timeSorted = seconds();
+  introSort(data.begin(), data.end());
+  timeSorted = fabs(seconds() - timeSorted);
+
+#ifdef CHECKRESULT
+  if (data != sorted)
+    printf("Sorting problem @ %d ", __LINE__);
+#endif // CHECKRESULT
+
+  // random data
+  data = random;
+  timeRandom = seconds();
+  introSort(data.begin(), data.end());
+  timeRandom = fabs(seconds() - timeRandom);
+
+#ifdef CHECKRESULT
+  if (data != sortedRandom)
+    printf("Sorting problem @ %d ", __LINE__);
+#endif // CHECKRESULT
+
+  printf("Intro Sort\t%8.3f ms\t%8.3f ms\t%8.3f ms\t%8.3f ms\n",
          1000*timeSorted, 1000*timeInverted, 1000*timeRandom, 1000*(timeSorted+timeInverted+timeRandom));
 #endif // FORWARDITERATOR
 

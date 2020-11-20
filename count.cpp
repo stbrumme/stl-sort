@@ -1,14 +1,14 @@
 // //////////////////////////////////////////////////////////
 // count.cpp
-// Copyright (c) 2014 Stephan Brumme. All rights reserved.
+// Copyright (c) 2014,2020 Stephan Brumme. All rights reserved.
 // see http://create.stephan-brumme.com/disclaimer.html
 //
 
-// g++ -O3 count.cpp -o count
-// and -std=c++11 if possible
+// g++ -O3 -std=c++11 count.cpp -o count
+// ./count [size]
+// if [size] is omitted then 100 integers are sorted
 
 #include <cstdio>
-#include <cstdlib>
 
 #include <vector>
 #include <algorithm> // std::sort, std::reverse
@@ -43,10 +43,11 @@ private:
   int value;
 };
 
+// statics
 int Number::numLessThan    = 0;
 int Number::numAssignments = 0;
 
-
+// array to be sorted
 typedef std::vector<Number> Container;
 
 
@@ -241,6 +242,23 @@ int main(int argc, char** argv)
   data = random;
   Number::reset();
   quickSort(data.begin(), data.end());
+  printf("\t%d\t%d", Number::numLessThan, Number::numAssignments);
+
+  // intro sort
+  printf("\nIntro Sort");
+  data = ascending;
+  Number::reset();
+  introSort(data.begin(), data.end());
+  printf("\t%d\t%d", Number::numLessThan, Number::numAssignments);
+
+  data = descending;
+  Number::reset();
+  introSort(data.begin(), data.end());
+  printf("\t%d\t%d", Number::numLessThan, Number::numAssignments);
+
+  data = random;
+  Number::reset();
+  introSort(data.begin(), data.end());
   printf("\t%d\t%d", Number::numLessThan, Number::numAssignments);
 
   // std::sort

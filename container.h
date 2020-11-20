@@ -1,21 +1,34 @@
 // //////////////////////////////////////////////////////////
 // container.h
-// Copyright (c) 2014 Stephan Brumme. All rights reserved.
+// Copyright (c) 2014,2020 Stephan Brumme. All rights reserved.
 // see http://create.stephan-brumme.com/disclaimer.html
 //
 
 #pragma once
 
-
 #include <iterator>
 #include <vector>
 
 
-// forward declaration
-class Container;
+// stored data type
+typedef int Value;
 
+
+// you can choose between
+// - forward iterator,
+// - bidirectional iterator and
+// - random access iterator
+
+// uncomment at most one line to switch between those three iterators
 //#define BIDIRECTIONALITERATOR
 #define RANDOMACCESSITERATOR
+// fallback if neither BIDIRECTIONALITERATOR nor RANDOMACCESSITERATOR is defined
+#if !defined(BIDIRECTIONALITERATOR) && !defined(RANDOMACCESSITERATOR)
+  #define FORWARDITERATOR
+#endif
+
+// forward declaration
+class Container;
 
 /// can be forward iterator, bidirectional or random access (see #define above)
 class Iterator :
@@ -28,12 +41,12 @@ class Iterator :
 #endif
 {
 public:
-  typedef int value_type;
+  typedef Value value_type;
 
   /// construct empty iterator
   Iterator() : iterator() {}
   /// construct new iterator
-  Iterator(const std::vector<int>::iterator& ite) : iterator(ite) {}
+  Iterator(const std::vector<Value>::iterator& ite) : iterator(ite) {}
 
   /// only copy position, skip container
   void operator=(const Iterator& other) { iterator = other.iterator; }
@@ -87,7 +100,7 @@ public:
 
 private:
   /// has random-access iterator
-  std::vector<int>::iterator iterator;
+  std::vector<Value>::iterator iterator;
 };
 
 
@@ -96,7 +109,7 @@ class Container
 {
 public:
   /// construct vector
-  Container(int initialSize = 0) : container(initialSize) {}
+  explicit Container(size_t initialSize = 0) : container(initialSize) {}
 
   /// return iterator pointing to first element
   Iterator begin() { return container.begin(); }
@@ -110,5 +123,5 @@ public:
 
 private:
   /// actually just a simple vector
-  std::vector<int> container;
+  std::vector<Value> container;
 };

@@ -1,6 +1,6 @@
 # STL sort - C++ implementation of sorting algorithms
 
-The interface is the same as `std::sort`, that means you provide two iterators and an optional less-than functor.
+The interface is identical to `std::sort`, that means you provide two iterators and an optional less-than functor.
 Just replace `std::sort` by one of my algorithms, e.g. `shellSort` - that's it !
 
 Included algorithms:
@@ -12,6 +12,7 @@ Included algorithms:
 - Merge Sort
 - Merge Sort (in-place)
 - Quick Sort
+- Intro Sort
 
 Note: unlike the original `std::sort`, my code works with `std::list`, too.
 
