@@ -556,8 +556,10 @@ void introSort(iterator first, iterator last, LessThan lessThan)
     // micro-optimization for exactly 2 elements
     if (numElements == 2)
     {
-      if (lessThan(*(first + 1), *first))
-        std::iter_swap(first + 1, first);
+      iterator second = first;
+      ++second;
+		if (lessThan(*second, *first))
+        std::iter_swap(second, first);
       return;
     }
 
